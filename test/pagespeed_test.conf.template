@@ -340,7 +340,7 @@ http {
     server_name customhostheader.example.com;
     pagespeed FileCachePath "@@FILE_CACHE@@_test";
     root "@@SERVER_ROOT@@/mod_pagespeed_test";
-    
+
     pagespeed on;
     pagespeed RewriteLevel PassThrough;
     pagespeed EnableFilters rewrite_images;
@@ -769,6 +769,30 @@ http {
     server_name date.example.com;
     pagespeed FileCachePath "@@FILE_CACHE@@";
     add_header "Date" "Date: Fri, 16 Oct 2009 23:05:07 GMT";
+  }
+
+  server { 
+    pagespeed InPlaceResourceOptimization on;
+    pagespeed RewriteLevel PassThrough;
+    pagespeed EnableFilters collapse_whitespace;
+
+    listen @@SECONDARY_PORT@@;
+    pagespeed FileCachePath "@@FILE_CACHE@@";
+    server_name header-test.example.com;
+    add_header "test"  "Testv";
+    more_clear_headers 'Server';
+    more_clear_headers 'X-Page-Speed';
+    more_set_headers 'ServerX: my-server';
+    more_set_headers 'Server: my-server'; 
+    # more_set_headers 'Content-Type: plain/text';
+ }
+  server { 
+    listen @@SECONDARY_PORT@@;
+    pagespeed FileCachePath "@@FILE_CACHE@@";
+    server_name header-test-ipro.example.com;
+    add_header "test"  "Testv";
+    more_clear_headers 'Server';
+    more_clear_headers 'X-Page-Speed';
   }
 
   server {
