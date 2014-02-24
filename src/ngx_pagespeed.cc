@@ -405,6 +405,53 @@ ngx_int_t copy_response_headers_to_ngx(
       headers_out->location = header;
     } else if (STR_EQ_LITERAL(name, "Server")) {
       headers_out->server = header;
+    } else if (STR_EQ_LITERAL(name, "Cache-Control")) {
+      ngx_table_elt_t  /**cc,*/ **ccp;
+      ngx_uint_t i;
+
+      ccp = (ngx_table_elt_t**)r->headers_out.cache_control.elts;
+      if (ccp == NULL) {
+        if (ngx_array_init(&r->headers_out.cache_control, r->pool,
+                           1, sizeof(ngx_table_elt_t *))
+            != NGX_OK) {
+          return NGX_ERROR;
+        }
+      } else {
+        for (i = 1; i < r->headers_out.cache_control.nelts; i++) {
+          ccp[i]->hash = 0;
+        }
+      }      
+      ccp = (ngx_table_elt_t**)ngx_array_push(&r->headers_out.cache_control);
+      if (ccp == NULL) {
+        return NGX_ERROR;
+      }
+      *ccp = header;
+          
+      /*
+      ccp = r->headers_out.cache_control.elts;
+      if (ccp != NULL) {
+        for (i = 1; i < r->headers_out.cache_control.nelts; i++) {
+          ccp[i]->hash = 0;
+        }
+        cc = ccp[0];
+      } else { 
+        if (ngx_array_init(&r->headers_out.cache_control, r->pool,
+                           1, sizeof(ngx_table_elt_t *))
+            != NGX_OK) {
+          return NGX_ERROR;
+        }
+        ccp = ngx_array_push(&r->headers_out.cache_control);
+        if (ccp == NULL) {
+          return NGX_ERROR;
+        }
+        cc = ngx_list_push(&r->headers_out.headers);
+        if (cc == NULL) {
+          return NGX_ERROR;
+        }
+        cc->hash = 1;
+        ngx_str_set(&cc->key, "Cache-Control");
+        *ccp = cc;
+        }*/
     } else if (STR_EQ_LITERAL(name, "Content-Length")) {
       int64 len;
       CHECK(pagespeed_headers.FindContentLength(&len));
@@ -1046,6 +1093,8 @@ ngx_int_t ps_base_fetch_handler(ngx_http_request_t* r) {
           header->hash = 0;
         }
       }
+    } else {
+      //ngx_http_clean_header(r);
     }
 
     // collect response headers from pagespeed
@@ -2131,7 +2180,6 @@ ngx_int_t ps_in_place_check_header_filter(ngx_http_request_t* r) {
     message_handler->Message(
         kInfo, "Serving rewritten resource in-place: %s",
         url.c_str());
-
     return ngx_http_next_header_filter(r);
   }
 

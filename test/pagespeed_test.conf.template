@@ -17,7 +17,6 @@ events {
 
 http {
   server_names_hash_bucket_size 128;
-
   log_format cache '$time_local '
                    '$upstream_cache_status '
                    '$http_host $request ($status) '
@@ -782,9 +781,10 @@ http {
     add_header "test"  "Testv";
     more_clear_headers 'Server';
     more_clear_headers 'X-Page-Speed';
-    more_set_headers 'ServerX: my-server';
-    more_set_headers 'Server: my-server'; 
-    # more_set_headers 'Content-Type: plain/text';
+    more_set_headers 'foo: bah';
+    #more_set_headers 'ServerX: my-server';
+    #more_set_headers 'Server: my-server'; 
+    #more_set_headers 'Content-Type: plain/text';
  }
   server { 
     listen @@SECONDARY_PORT@@;
@@ -792,7 +792,7 @@ http {
     server_name header-test-ipro.example.com;
     add_header "test"  "Testv";
     more_clear_headers 'Server';
-    more_clear_headers 'X-Page-Speed';
+#    more_clear_headers 'X-Page-Speed';
   }
 
   server {
